@@ -5,10 +5,12 @@
     :copyright: © 2018 Grey Li <withlihui@gmail.com>
     :license: MIT, see LICENSE for more details.
 """
+import logging
 import os
+from logging.handlers import SMTPHandler, RotatingFileHandler
 
 import click
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_login import current_user
 from flask_sqlalchemy import get_debug_queries
 from flask_wtf.csrf import CSRFError
@@ -16,7 +18,7 @@ from flask_wtf.csrf import CSRFError
 from bluelog.blueprints.admin import admin_bp
 from bluelog.blueprints.auth import auth_bp
 from bluelog.blueprints.blog import blog_bp
-from bluelog.extensions import bootstrap, db, login_manager, csrf, ckeditor, mail, moment, toolbar
+from bluelog.extensions import bootstrap, db, login_manager, csrf, ckeditor, mail, moment, toolbar, migrate
 from bluelog.models import Admin, Post, Category, Comment, Link
 from bluelog.settings import config
 
@@ -37,11 +39,42 @@ def create_app(config_name=None):
     register_errors(app)
     register_shell_context(app)
     register_template_context(app)
+    register_request_handlers(app)
     return app
 
 
 def register_logging(app):
-    pass
+    class RequestFormatter(logging.Formatter):
+
+        def format(self, record):
+            record.url = request.url
+            record.remote_addr = request.remote_addr
+            return super(RequestFormatter, self).format(record)
+
+    request_formatter = RequestFormatter(
+        '[%(asctime)s] %(remote_addr)s requested %(url)s\n'
+        '%(levelname)s in %(module)s: %(message)s'
+    )
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    file_handler = RotatingFileHandler(os.path.join(basedir, 'logs/bluelog.log'),
+                                       maxBytes=10 * 1024 * 1024, backupCount=10)
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(logging.INFO)
+
+    mail_handler = SMTPHandler(
+        mailhost=app.config['MAIL_SERVER'],
+        fromaddr=app.config['MAIL_USERNAME'],
+        toaddrs=['ADMIN_EMAIL'],
+        subject='Bluelog Application Error',
+        credentials=(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD']))
+    mail_handler.setLevel(logging.ERROR)
+    mail_handler.setFormatter(request_formatter)
+
+    if not app.debug:
+        app.logger.addHandler(mail_handler)
+        app.logger.addHandler(file_handler)
 
 
 def register_extensions(app):
@@ -53,6 +86,7 @@ def register_extensions(app):
     mail.init_app(app)
     moment.init_app(app)
     toolbar.init_app(app)
+    migrate.init_app(app, db)
 
 
 def register_blueprints(app):

@@ -13,6 +13,7 @@ from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 from flask_debugtoolbar import DebugToolbarExtension
+from flask_migrate import Migrate
 
 bootstrap = Bootstrap()
 db = SQLAlchemy()
@@ -22,6 +23,7 @@ ckeditor = CKEditor()
 mail = Mail()
 moment = Moment()
 toolbar = DebugToolbarExtension()
+migrate = Migrate()
 
 
 @login_manager.user_loader
