@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% from 'bootstrap/form.html' import render_form %}
+
+{% block title %}Manage Links{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>Links
+            <small class="text-muted">{{ links|length }}</small>
+            <span class="float-right">
+                <a class="btn btn-primary btn-sm" href="{{ url_for('.new_link') }}">New Link</a>
+            </span>
+        </h1>
+    </div>
+    {% if links %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>No.</th>
+                <th>Name</th>
+                <th>URL</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            {% for link in links %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ link.name }}</td>
+                    <td><a href="{{ link.url }}" target="_blank">{{ link.url }}</a></td>
+                    <td>
+                        <a class="btn btn-info btn-sm" href="{{ url_for('.edit_link', link_id=link.id) }}">Edit</a>
+                        <form class="inline" method="post" action="{{ url_for('.delete_link', link_id=link.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Are you sure?');">Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <div class="tip"><h5>No links.</h5></div>
+    {% endif %}
+{% endblock %}
