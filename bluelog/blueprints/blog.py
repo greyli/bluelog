@@ -6,6 +6,7 @@
     :license: MIT, see LICENSE for more details.
 """
 from flask import render_template, flash, redirect, url_for, request, current_app, Blueprint, abort, make_response
+from flask_login import current_user
 
 from bluelog.emails import send_new_comment_email, send_new_reply_email
 from bluelog.extensions import db
@@ -14,11 +15,6 @@ from bluelog.models import Post, Category, Comment
 from bluelog.utils import redirect_back
 
 blog_bp = Blueprint('blog', __name__)
-
-
-# skip it
-class current_user:
-    is_authenticated = False
 
 
 @blog_bp.route('/')

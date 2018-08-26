@@ -18,5 +18,8 @@
 {% else %}
     <div class="tip">
         <h5>No posts yet.</h5>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('admin.new_post') }}">Write Now</a>
+        {% endif %}
     </div>
 {% endif %}

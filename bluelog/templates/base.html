@@ -48,6 +48,15 @@
                     <a href="http://helloflask.com" title="A HelloFlask project">HelloFlask</a>
                 </small>
             </p>
+            <p class="float-right">
+                <small>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('auth.logout', next=request.full_path) }}">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login', next=request.full_path) }}">Login</a>
+                    {% endif %}
+                </small>
+            </p>
         </footer>
     {% endblock footer %}
 </main>
