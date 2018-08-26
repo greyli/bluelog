@@ -10,6 +10,10 @@
     </div>
     <div class="row">
         <div class="col-sm-8">
+            {% include 'blog/_posts.html' %}
+            {% if posts %}
+                <div class="page-footer">{{ render_pager(pagination) }}</div>
+            {% endif %}
         </div>
         <div class="col-sm-4 sidebar">
             {% include 'blog/_sidebar.html' %}

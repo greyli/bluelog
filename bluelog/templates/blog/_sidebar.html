@@ -27,3 +27,16 @@
     </div>
 {% endif %}
 
+<div class="dropdown">
+    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuButton"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Change Theme
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        {% for theme_name, display_name in config.BLUELOG_THEMES.items() %}
+            <a class="dropdown-item"
+               href="{{ url_for('blog.change_theme', theme_name=theme_name, next=request.full_path) }}">
+                {{ display_name }}</a>
+        {% endfor %}
+    </div>
+</div>

@@ -10,6 +10,8 @@
     </div>
     <div class="row">
         <div class="col-sm-8">
+            {% include "blog/_posts.html" %}
+            <div class="page-footer">{{ render_pagination(pagination) }}</div>
         </div>
         <div class="col-sm-4 sidebar">
             {% include "blog/_sidebar.html" %}
