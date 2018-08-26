@@ -1,0 +1,61 @@
+{% from 'bootstrap/nav.html' import render_nav_item %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>{% block title %}{% endblock title %} - {{ admin.blog_title|default('Blog Title') }}</title>
+        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/perfect_blue.min.css') }}" type="text/css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" type="text/css">
+    {% endblock head %}
+</head>
+<body>
+{% block nav %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('blog.index') }}">{{ admin.blog_title }}</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01"
+                    aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarColor01">
+                <ul class="navbar-nav mr-auto">
+                    {{ render_nav_item('blog.index', 'Home') }}
+                    {{ render_nav_item('blog.about', 'About') }}
+                </ul>
+            </div>
+        </div>
+    </nav>
+{% endblock nav %}
+
+<main class="container">
+    {% for message in get_flashed_messages(with_categories=True) %}
+        <div class="alert alert-{{ message[0] }}" role="alert">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{ message[1] }}
+        </div>
+    {% endfor %}
+    {% block content %}{% endblock content %}
+    {% block footer %}
+        <footer>
+            <p class="float-left">
+                <small> &copy; 2018 <a href="http://greyli.com" title="Written by Grey Li">Grey Li</a> -
+                    <a href="https://github.com/greyli/bluelog" title="Fork me on GitHub">GitHub</a> -
+                    <a href="http://helloflask.com" title="A HelloFlask project">HelloFlask</a>
+                </small>
+            </p>
+        </footer>
+    {% endblock footer %}
+</main>
+
+{% block scripts %}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.2.1.slim.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {{ moment.include_moment(local_js=url_for('static', filename='js/moment-with-locales.min.js')) }}
+{% endblock %}
+</body>
+</html>

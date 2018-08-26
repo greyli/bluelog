@@ -1,0 +1,29 @@
+{% if links %}
+    <div class="card mb-3">
+        <div class="card-header">Links</div>
+        <ul class="list-group list-group-flush">
+            {% for link in links %}
+                <li class="list-group-item  list-group-item-action d-flex justify-content-between align-items-center">
+                    <a href="{{ link.url }}" target="_blank">{{ link.name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+{% if categories %}
+    <div class="card mb-3">
+        <div class="card-header">Categories</div>
+        <ul class="list-group list-group-flush">
+            {% for category in categories %}
+                <li class="list-group-item  list-group-item-action d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('blog.show_category', category_id=category.id) }}">
+                        {{ category.name }}
+                    </a>
+                    <span class="badge badge-primary badge-pill"> {{ category.posts|length }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
