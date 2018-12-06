@@ -51,7 +51,7 @@
                 </div>
             </div>
             <div class="comments" id="comments">
-                <h3>{{ comments|length }} Comments
+                <h3>{{ pagination.total }} Comments
                     <small>
                         <a href="{{ url_for('.show_post', post_id=post.id, page=pagination.pages or 1) }}#comments">
                             latest</a>
