@@ -5,13 +5,16 @@
     :copyright: © 2018 Grey Li <withlihui@gmail.com>
     :license: MIT, see LICENSE for more details.
 """
-from flask import render_template, flash, redirect, url_for, request, current_app, Blueprint
+import os
+
+from flask import render_template, flash, redirect, url_for, request, current_app, Blueprint, send_from_directory
 from flask_login import login_required, current_user
+from flask_ckeditor import upload_success, upload_fail
 
 from bluelog.extensions import db
 from bluelog.forms import SettingForm, PostForm, CategoryForm, LinkForm
 from bluelog.models import Post, Category, Comment, Link
-from bluelog.utils import redirect_back
+from bluelog.utils import redirect_back, allowed_file
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -239,3 +242,18 @@ def delete_link(link_id):
     db.session.commit()
     flash('Link deleted.', 'success')
     return redirect(url_for('.manage_link'))
+
+
+@admin_bp.route('/uploads/<path:filename>')
+def get_image(filename):
+    return send_from_directory(current_app.config['BLUELOG_UPLOAD_PATH'], filename)
+
+
+@admin_bp.route('/upload', methods=['POST'])
+def upload_image():
+    f = request.files.get('upload')
+    if not allowed_file(f.filename):
+        return upload_fail('Image only!')
+    f.save(os.path.join(current_app.config['BLUELOG_UPLOAD_PATH'], f.filename))
+    url = url_for('.get_image', filename=f.filename)
+    return upload_success(url, f.filename)

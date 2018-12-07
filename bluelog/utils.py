@@ -10,7 +10,7 @@ try:
 except ImportError:
     from urllib.parse import urlparse, urljoin
 
-from flask import request, redirect, url_for
+from flask import request, redirect, url_for, current_app
 
 
 def is_safe_url(target):
@@ -26,3 +26,8 @@ def redirect_back(default='blog.index', **kwargs):
         if is_safe_url(target):
             return redirect(target)
     return redirect(url_for(default, **kwargs))
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in current_app.config['BLUELOG_ALLOWED_IMAGE_EXTENSIONS']

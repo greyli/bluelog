@@ -108,3 +108,5 @@ venv.bak/
 .idea
 logs/*
 !logs/.gitkeep
+uploads/*
+!uploads/.gitkeep

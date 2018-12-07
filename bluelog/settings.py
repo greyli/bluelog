@@ -26,6 +26,9 @@ class BaseConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = True
 
+    CKEDITOR_ENABLE_CSRF = True
+    CKEDITOR_FILE_UPLOADER = 'admin.upload_image'
+
     MAIL_SERVER = os.getenv('MAIL_SERVER')
     MAIL_PORT = 465
     MAIL_USE_SSL = True
@@ -40,6 +43,9 @@ class BaseConfig(object):
     # ('theme name', 'display name')
     BLUELOG_THEMES = {'perfect_blue': 'Perfect Blue', 'black_swan': 'Black Swan'}
     BLUELOG_SLOW_QUERY_THRESHOLD = 1
+
+    BLUELOG_UPLOAD_PATH = os.path.join(basedir, 'uploads')
+    BLUELOG_ALLOWED_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif']
 
 
 class DevelopmentConfig(BaseConfig):
