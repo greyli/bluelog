@@ -32,7 +32,7 @@
         </td>
         <td>{{ moment(post.timestamp).format('LL') }}</td>
         <td><a href="{{ url_for('blog.show_post', post_id=post.id) }}#comments">{{ post.comments|length }}</a></td>
-        <td>{{ post.body|length }}</td>
+        <td>{{ post.body|striptags|length }}</td>
         <td>
             <form class="inline" method="post"
                   action="{{ url_for('.set_comment', post_id=post.id, next=request.full_path) }}">
