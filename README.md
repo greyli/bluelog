@@ -2,6 +2,8 @@
 
 *A blue blog.*
 
+> Example application for *[Python Web Development with Flask](http://helleflask.com/en/book)* (《[Flask Web 开发实战](http://helleflask.com/book)》).
+
 Demo: http://bluelog.helloflask.com
 
 ![Screenshot](http://helloflask.com/screenshots/bluelog.png)
