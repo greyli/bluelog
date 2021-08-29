@@ -11,12 +11,10 @@ flask-moment==0.9.0
 flask-sqlalchemy==2.4.1
 flask-wtf==0.14.3
 flask==1.1.2
-gunicorn==20.0.4
 itsdangerous==1.1.0
 jinja2==2.11.1
 mako==1.1.2
 markupsafe==1.1.1
-psycopg2==2.8.4
 python-dateutil==2.8.1
 python-dotenv==0.12.0
 python-editor==1.0.4
