@@ -21,7 +21,7 @@ blog_bp = Blueprint('blog', __name__)
 def index():
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['BLUELOG_POST_PER_PAGE']
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(page, per_page=per_page)
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(page=page, per_page=per_page)
     posts = pagination.items
     return render_template('blog/index.html', pagination=pagination, posts=posts)
 
@@ -36,7 +36,7 @@ def show_category(category_id):
     category = Category.query.get_or_404(category_id)
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['BLUELOG_POST_PER_PAGE']
-    pagination = Post.query.with_parent(category).order_by(Post.timestamp.desc()).paginate(page, per_page)
+    pagination = Post.query.with_parent(category).order_by(Post.timestamp.desc()).paginate(page=page, per_page=per_page)
     posts = pagination.items
     return render_template('blog/category.html', category=category, pagination=pagination, posts=posts)
 
@@ -47,7 +47,7 @@ def show_post(post_id):
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['BLUELOG_COMMENT_PER_PAGE']
     pagination = Comment.query.with_parent(post).filter_by(reviewed=True).order_by(Comment.timestamp.asc()).paginate(
-        page, per_page)
+        page=page, per_page=per_page)
     comments = pagination.items
 
     if current_user.is_authenticated:
