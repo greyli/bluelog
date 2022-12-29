@@ -13,109 +13,113 @@ from sqlalchemy.exc import IntegrityError
 from bluelog.extensions import db
 from bluelog.models import Admin, Category, Post, Comment, Link
 
+
 fake = Faker()
 
 
-def fake_admin():
+def fake_admin() -> None:
     admin = Admin(
-        username='admin',
-        blog_title='Bluelog',
+        username="admin",
+        blog_title="Bluelog",
         blog_sub_title="No, I'm the real thing.",
-        name='Mima Kirigoe',
-        about='Um, l, Mima Kirigoe, had a fun time as a member of CHAM...'
+        name="Mima Kirigoe",
+        about="Um, l, Mima Kirigoe, had a fun time as a member of CHAM...",
     )
-    admin.set_password('helloflask')
+    admin.set_password("helloflask")
+
     db.session.add(admin)
     db.session.commit()
 
 
-def fake_categories(count=10):
-    category = Category(name='Default')
-    db.session.add(category)
+def fake_categories(count=10) -> None:
+    db.session.add(Category(name="Default"))
 
-    for i in range(count):
-        category = Category(name=fake.word())
-        db.session.add(category)
+    for _ in range(count):
+        db.session.add(Category(name=fake.word()))
         try:
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
 
 
-def fake_posts(count=50):
-    for i in range(count):
-        post = Post(
-            title=fake.sentence(),
-            body=fake.text(2000),
-            category=Category.query.get(random.randint(1, Category.query.count())),
-            timestamp=fake.date_time_this_year()
+def fake_posts(count=50) -> None:
+    for _ in range(count):
+        db.session.add(
+            Post(
+                title=fake.sentence(),
+                body=fake.text(2000),
+                category=Category.query.get(random.randint(1, Category.query.count())),
+                timestamp=fake.date_time_this_year(),
+            )
         )
-
-        db.session.add(post)
     db.session.commit()
 
 
-def fake_comments(count=500):
-    for i in range(count):
-        comment = Comment(
-            author=fake.name(),
-            email=fake.email(),
-            site=fake.url(),
-            body=fake.sentence(),
-            timestamp=fake.date_time_this_year(),
-            reviewed=True,
-            post=Post.query.get(random.randint(1, Post.query.count()))
-        )
-        db.session.add(comment)
+def _get_random_post() -> Post:
+    return Post.query.get(random.randint(1, Post.query.count()))
+
+
+def _get_comment_with_fake_data_and_(
+    reviewed: bool, replied: Comment | None = None
+) -> Comment:
+    comment = Comment(
+        author=fake.name(),
+        email=fake.email(),
+        site=fake.url(),
+        body=fake.sentence(),
+        timestamp=fake.date_time_this_year(),
+        reviewed=reviewed,
+        post=_get_random_post(),
+    )
+    if replied:
+        comment.replied = replied
+    return comment
+
+
+def _get_comment_from_admin() -> Comment:
+    return Comment(
+        author="Mima Kirigoe",
+        email="mima@example.com",
+        site="example.com",
+        body=fake.sentence(),
+        timestamp=fake.date_time_this_year(),
+        from_admin=True,
+        reviewed=True,
+        post=_get_random_post(),
+    )
+
+
+def fake_comments(count=500) -> None:
+    for _ in range(count):
+        db.session.add(_get_comment_with_fake_data_and_(reviewed=True))
 
     salt = int(count * 0.1)
-    for i in range(salt):
-        # unreviewed comments
-        comment = Comment(
-            author=fake.name(),
-            email=fake.email(),
-            site=fake.url(),
-            body=fake.sentence(),
-            timestamp=fake.date_time_this_year(),
-            reviewed=False,
-            post=Post.query.get(random.randint(1, Post.query.count()))
-        )
-        db.session.add(comment)
 
+    for _ in range(salt):
+        # not reviewed comments
+        db.session.add(_get_comment_with_fake_data_and_(reviewed=False))
         # from admin
-        comment = Comment(
-            author='Mima Kirigoe',
-            email='mima@example.com',
-            site='example.com',
-            body=fake.sentence(),
-            timestamp=fake.date_time_this_year(),
-            from_admin=True,
-            reviewed=True,
-            post=Post.query.get(random.randint(1, Post.query.count()))
-        )
-        db.session.add(comment)
+        db.session.add(_get_comment_from_admin())
     db.session.commit()
 
     # replies
-    for i in range(salt):
-        comment = Comment(
-            author=fake.name(),
-            email=fake.email(),
-            site=fake.url(),
-            body=fake.sentence(),
-            timestamp=fake.date_time_this_year(),
-            reviewed=True,
-            replied=Comment.query.get(random.randint(1, Comment.query.count())),
-            post=Post.query.get(random.randint(1, Post.query.count()))
+    for _ in range(salt):
+        db.session.add(
+            _get_comment_with_fake_data_and_(
+                reviewed=True,
+                replied=Comment.query.get(random.randint(1, Comment.query.count())),
+            )
         )
-        db.session.add(comment)
     db.session.commit()
 
 
-def fake_links():
-    twitter = Link(name='Twitter', url='#')
-    facebook = Link(name='Facebook', url='#')
-    linkedin = Link(name='LinkedIn', url='#')
-    google = Link(name='Google+', url='#')
-    db.session.add_all([twitter, facebook, linkedin, google])
+def fake_links() -> None:
+    db.session.add_all(
+        [
+            Link(name="Twitter", url="#"),
+            Link(name="Facebook", url="#"),
+            Link(name="LinkedIn", url="#"),
+            Link(name="Google+", url="#"),
+        ]
+    )
     db.session.commit()
