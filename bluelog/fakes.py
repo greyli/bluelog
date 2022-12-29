@@ -17,7 +17,7 @@ from bluelog.models import Admin, Category, Post, Comment, Link
 fake = Faker()
 
 
-def fake_admin():
+def fake_admin() -> None:
     admin = Admin(
         username="admin",
         blog_title="Bluelog",
@@ -26,11 +26,12 @@ def fake_admin():
         about="Um, l, Mima Kirigoe, had a fun time as a member of CHAM...",
     )
     admin.set_password("helloflask")
+
     db.session.add(admin)
     db.session.commit()
 
 
-def fake_categories(count=10):
+def fake_categories(count=10) -> None:
     db.session.add(Category(name="Default"))
 
     for _ in range(count):
@@ -41,7 +42,7 @@ def fake_categories(count=10):
             db.session.rollback()
 
 
-def fake_posts(count=50):
+def fake_posts(count=50) -> None:
     for _ in range(count):
         db.session.add(
             Post(
@@ -54,7 +55,13 @@ def fake_posts(count=50):
     db.session.commit()
 
 
-def _get_comment_with_fake_data_and_(reviewed, replied=None):
+def _get_random_post() -> Post:
+    return Post.query.get(random.randint(1, Post.query.count()))
+
+
+def _get_comment_with_fake_data_and_(
+    reviewed: bool, replied: Comment | None = None
+) -> Comment:
     comment = Comment(
         author=fake.name(),
         email=fake.email(),
@@ -62,14 +69,14 @@ def _get_comment_with_fake_data_and_(reviewed, replied=None):
         body=fake.sentence(),
         timestamp=fake.date_time_this_year(),
         reviewed=reviewed,
-        post=Post.query.get(random.randint(1, Post.query.count())),
+        post=_get_random_post(),
     )
     if replied:
         comment.replied = replied
     return comment
 
 
-def _get_comment_from_admin():
+def _get_comment_from_admin() -> Comment:
     return Comment(
         author="Mima Kirigoe",
         email="mima@example.com",
@@ -78,11 +85,11 @@ def _get_comment_from_admin():
         timestamp=fake.date_time_this_year(),
         from_admin=True,
         reviewed=True,
-        post=Post.query.get(random.randint(1, Post.query.count())),
+        post=_get_random_post(),
     )
 
 
-def fake_comments(count=500):
+def fake_comments(count=500) -> None:
     for _ in range(count):
         db.session.add(_get_comment_with_fake_data_and_(reviewed=True))
 
@@ -106,7 +113,7 @@ def fake_comments(count=500):
     db.session.commit()
 
 
-def fake_links():
+def fake_links() -> None:
     db.session.add_all(
         [
             Link(name="Twitter", url="#"),

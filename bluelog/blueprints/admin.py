@@ -14,6 +14,7 @@ from flask import (
     url_for,
     request,
     current_app,
+    Response,
     Blueprint,
     send_from_directory,
 )
@@ -29,14 +30,14 @@ from bluelog.utils import redirect_back, allowed_file, get_page, get_per_page
 admin_bp = Blueprint("admin", __name__)
 
 
-def _set_current_user_data_in_(form):
+def _set_current_user_data_in_(form: SettingForm) -> None:
     form.name.data = current_user.name
     form.blog_title.data = current_user.blog_title
     form.blog_sub_title.data = current_user.blog_sub_title
     form.about.data = current_user.about
 
 
-def _update_current_user_settings_with_data_from_(form):
+def _update_current_user_settings_with_data_from_(form: SettingForm) -> None:
     current_user.name = form.name.data
     current_user.blog_title = form.blog_title.data
     current_user.blog_sub_title = form.blog_sub_title.data
@@ -46,7 +47,7 @@ def _update_current_user_settings_with_data_from_(form):
 
 @admin_bp.route("/settings", methods=["GET", "POST"])
 @login_required
-def settings():
+def settings() -> str | Response:
     form = SettingForm()
 
     if form.validate_on_submit():
@@ -61,7 +62,7 @@ def settings():
 
 @admin_bp.route("/post/manage")
 @login_required
-def manage_post():
+def manage_post() -> str:
     page = get_page()
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         page, get_per_page()
@@ -74,7 +75,7 @@ def manage_post():
     )
 
 
-def _add_post_in_db_with_data_from_(form):
+def _add_post_in_db_with_data_from_(form: PostForm) -> int:
     post = Post(
         title=form.title.data,
         body=form.body.data,
@@ -87,7 +88,7 @@ def _add_post_in_db_with_data_from_(form):
 
 @admin_bp.route("/post/new", methods=["GET", "POST"])
 @login_required
-def new_post():
+def new_post() -> str | Response:
     form = PostForm()
 
     if form.validate_on_submit():
@@ -98,13 +99,13 @@ def new_post():
     return render_template("admin/new_post.html", form=form)
 
 
-def _set_post_data_in_(form, post):
+def _set_post_data_in_(form: PostForm, post: Post) -> None:
     form.title.data = post.title
     form.body.data = post.body
     form.category.data = post.category_id
 
 
-def _update_post_with_data_from_(form, post):
+def _update_post_with_data_from_(form: PostForm, post: Post) -> None:
     post.title = form.title.data
     post.body = form.body.data
     post.category = Category.query.get(form.category.data)
@@ -113,7 +114,7 @@ def _update_post_with_data_from_(form, post):
 
 @admin_bp.route("/post/<int:post_id>/edit", methods=["GET", "POST"])
 @login_required
-def edit_post(post_id):
+def edit_post(post_id: int) -> str | Response:
     form = PostForm()
     post = Post.query.get_or_404(post_id)
 
@@ -128,7 +129,7 @@ def edit_post(post_id):
 
 @admin_bp.route("/post/<int:post_id>/delete", methods=["POST"])
 @login_required
-def delete_post(post_id):
+def delete_post(post_id: int) -> Response:
     db.session.delete(Post.query.get_or_404(post_id))
     db.session.commit()
 
@@ -138,7 +139,7 @@ def delete_post(post_id):
 
 @admin_bp.route("/post/<int:post_id>/set-comment", methods=["POST"])
 @login_required
-def set_comment(post_id):
+def set_comment(post_id: int) -> Response:
     post = Post.query.get_or_404(post_id)
     post.can_comment, comment_status = (
         (False, "disabled") if post.can_comment else (True, "enabled")
@@ -151,7 +152,7 @@ def set_comment(post_id):
 
 @admin_bp.route("/comment/manage")
 @login_required
-def manage_comment():
+def manage_comment() -> str:
     filter_rule = request.args.get("filter", "all")
     filtered_comments = {
         "unread": Comment.query.filter_by(reviewed=False),
@@ -167,7 +168,7 @@ def manage_comment():
 
 @admin_bp.route("/comment/<int:comment_id>/approve", methods=["POST"])
 @login_required
-def approve_comment(comment_id):
+def approve_comment(comment_id: int) -> Response:
     comment = Comment.query.get_or_404(comment_id)
     comment.reviewed = True
     db.session.commit()
@@ -178,7 +179,7 @@ def approve_comment(comment_id):
 
 @admin_bp.route("/comment/<int:comment_id>/delete", methods=["POST"])
 @login_required
-def delete_comment(comment_id):
+def delete_comment(comment_id: int) -> Response:
     db.session.delete(Comment.query.get_or_404(comment_id))
     db.session.commit()
 
@@ -188,13 +189,13 @@ def delete_comment(comment_id):
 
 @admin_bp.route("/category/manage")
 @login_required
-def manage_category():
+def manage_category() -> str:
     return render_template("admin/manage_category.html")
 
 
 @admin_bp.route("/category/new", methods=["GET", "POST"])
 @login_required
-def new_category():
+def new_category() -> str | Response:
     form = CategoryForm()
 
     if form.validate_on_submit():
@@ -208,7 +209,7 @@ def new_category():
 
 @admin_bp.route("/category/<int:category_id>/edit", methods=["GET", "POST"])
 @login_required
-def edit_category(category_id):
+def edit_category(category_id: int) -> str | Response:
     form = CategoryForm()
     category = Category.query.get_or_404(category_id)
 
@@ -229,7 +230,7 @@ def edit_category(category_id):
 
 @admin_bp.route("/category/<int:category_id>/delete", methods=["POST"])
 @login_required
-def delete_category(category_id):
+def delete_category(category_id: int) -> Response:
     category = Category.query.get_or_404(category_id)
 
     if category.id == 1:
@@ -244,13 +245,13 @@ def delete_category(category_id):
 
 @admin_bp.route("/link/manage")
 @login_required
-def manage_link():
+def manage_link() -> str:
     return render_template("admin/manage_link.html")
 
 
 @admin_bp.route("/link/new", methods=["GET", "POST"])
 @login_required
-def new_link():
+def new_link() -> str | Response:
     form = LinkForm()
 
     if form.validate_on_submit():
@@ -262,12 +263,12 @@ def new_link():
     return render_template("admin/new_link.html", form=form)
 
 
-def _set_link_data_in_(form, link):
+def _set_link_data_in_(form: LinkForm, link: Link) -> None:
     form.name.data = link.name
     form.url.data = link.url
 
 
-def _update_link_with_data_from_(form, link):
+def _update_link_with_data_from_(form: LinkForm, link: Link) -> None:
     link.name = form.name.data
     link.url = form.url.data
     db.session.commit()
@@ -275,7 +276,7 @@ def _update_link_with_data_from_(form, link):
 
 @admin_bp.route("/link/<int:link_id>/edit", methods=["GET", "POST"])
 @login_required
-def edit_link(link_id):
+def edit_link(link_id: int) -> str | Response:
     form = LinkForm()
     link = Link.query.get_or_404(link_id)
 
@@ -291,7 +292,7 @@ def edit_link(link_id):
 
 @admin_bp.route("/link/<int:link_id>/delete", methods=["POST"])
 @login_required
-def delete_link(link_id):
+def delete_link(link_id) -> Response:
     db.session.delete(Link.query.get_or_404(link_id))
     db.session.commit()
 
@@ -300,7 +301,7 @@ def delete_link(link_id):
 
 
 @admin_bp.route("/uploads/<path:filename>")
-def get_image(filename):
+def get_image(filename: str):
     return send_from_directory(current_app.config["BLUELOG_UPLOAD_PATH"], filename)
 
 

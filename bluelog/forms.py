@@ -45,7 +45,7 @@ class PostForm(FlaskForm):
     body = CKEditorField("Body", validators=[DataRequired()])
     submit = SubmitField()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super(PostForm, self).__init__(*args, **kwargs)
         self.category.choices = [
             (category.id, category.name)
@@ -57,7 +57,7 @@ class CategoryForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired(), Length(1, 30)])
     submit = SubmitField()
 
-    def validate_name(self, field):
+    def validate_name(self, field: StringField) -> None:
         if Category.query.filter_by(name=field.data).first():
             raise ValidationError("Name already in use.")
 

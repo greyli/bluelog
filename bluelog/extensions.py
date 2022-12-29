@@ -26,15 +26,14 @@ moment = Moment()
 toolbar = DebugToolbarExtension()
 migrate = Migrate()
 
+from bluelog.models import Admin
+
 
 @login_manager.user_loader
-def load_user(user_id):
-    from bluelog.models import Admin
+def load_user(user_id: int) -> Admin:
 
-    user = Admin.query.get(int(user_id))
-    return user
+    return Admin.query.get(int(user_id))
 
 
 login_manager.login_view = "auth.login"
-# login_manager.login_message = 'Your custom message'
 login_manager.login_message_category = "warning"

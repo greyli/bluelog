@@ -11,22 +11,27 @@ from flask_mail import Message
 from flask import url_for, current_app
 
 from bluelog.extensions import mail
+from bluelog.models import Post, Comment
 
 
-def _send_async_mail(app, message):
+def _send_async_mail(app: current_app, message: Message) -> None:
     with app.app_context():
         mail.send(message)
 
 
-def send_mail(subject, to, html):
-    app = current_app._get_current_object()
-    message = Message(subject, recipients=[to], html=html)
-    thr = Thread(target=_send_async_mail, args=[app, message])
+def send_mail(subject: str, to: str, html: str) -> Thread:
+    thr = Thread(
+        target=_send_async_mail,
+        args=[
+            current_app._get_current_object(),
+            Message(subject, recipients=[to], html=html),
+        ],
+    )
     thr.start()
     return thr
 
 
-def send_new_comment_email(post):
+def send_new_comment_email(post: Post) -> None:
     post_url = url_for("blog.show_post", post_id=post.id, _external=True) + "#comments"
     send_mail(
         subject="New comment",
@@ -38,7 +43,7 @@ def send_new_comment_email(post):
     )
 
 
-def send_new_reply_email(comment):
+def send_new_reply_email(comment: Comment) -> None:
     post_url = (
         url_for("blog.show_post", post_id=comment.post_id, _external=True) + "#comments"
     )

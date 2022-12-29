@@ -6,6 +6,7 @@
     :license: MIT, see LICENSE for more details.
 """
 from flask import (
+    Response,
     Blueprint,
     abort,
     flash,
@@ -17,6 +18,7 @@ from flask import (
     render_template,
 )
 from flask_login import current_user
+from flask_sqlalchemy import Pagination
 
 from bluelog.extensions import db
 from bluelog.models import Post, Category, Comment
@@ -29,7 +31,7 @@ blog_bp = Blueprint("blog", __name__)
 
 
 @blog_bp.route("/")
-def index():
+def index() -> str:
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         get_page(), get_per_page()
     )
@@ -39,11 +41,11 @@ def index():
 
 
 @blog_bp.route("/about")
-def about():
+def about() -> str:
     return render_template("blog/about.html")
 
 
-def _get_pagination_by_(category):
+def _get_pagination_by_(category: Category) -> Pagination:
     return (
         Post.query.with_parent(category)
         .order_by(Post.timestamp.desc())
@@ -52,7 +54,7 @@ def _get_pagination_by_(category):
 
 
 @blog_bp.route("/category/<int:category_id>")
-def show_category(category_id):
+def show_category(category_id: int) -> str:
     category = Category.query.get_or_404(category_id)
     pagination = _get_pagination_by_(category)
     return render_template(
@@ -63,7 +65,7 @@ def show_category(category_id):
     )
 
 
-def _get_form_for_comment():
+def _get_form_for_comment() -> AdminCommentForm | CommentForm:
     if current_user.is_authenticated:
         form = AdminCommentForm()
         form.author.data = current_user.name
@@ -75,7 +77,9 @@ def _get_form_for_comment():
     return form
 
 
-def _get_comment_with_data_from_(form, post):
+def _get_comment_with_data_from_(
+    form: AdminCommentForm | CommentForm, post: Post
+) -> Comment:
     from_admin, reviewed = (
         (False, False) if isinstance(form, CommentForm) else (True, True)
     )
@@ -97,7 +101,9 @@ def _get_comment_with_data_from_(form, post):
     return comment
 
 
-def _add_comment_with_data_from_(form, post):
+def _add_comment_with_data_from_(
+    form: AdminCommentForm | CommentForm, post: Post
+) -> None:
     db.session.add(_get_comment_with_data_from_(form, post))
     db.session.commit()
 
@@ -109,7 +115,7 @@ def _add_comment_with_data_from_(form, post):
 
 
 @blog_bp.route("/post/<int:post_id>", methods=["GET", "POST"])
-def show_post(post_id):
+def show_post(post_id: int) -> str | Response:
     post = Post.query.get_or_404(post_id)
     pagination = (
         Comment.query.with_parent(post)
@@ -132,7 +138,7 @@ def show_post(post_id):
 
 
 @blog_bp.route("/reply/comment/<int:comment_id>")
-def reply_comment(comment_id):
+def reply_comment(comment_id: int) -> Response:
     comment = Comment.query.get_or_404(comment_id)
 
     if not comment.post.can_comment:
@@ -151,7 +157,7 @@ def reply_comment(comment_id):
 
 
 @blog_bp.route("/change-theme/<theme_name>")
-def change_theme(theme_name):
+def change_theme(theme_name: str) -> Response:
     if theme_name not in current_app.config["BLUELOG_THEMES"].keys():
         abort(404)
 

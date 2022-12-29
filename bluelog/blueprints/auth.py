@@ -5,7 +5,7 @@
     :copyright: © 2018 Grey Li <withlihui@gmail.com>
     :license: MIT, see LICENSE for more details.
 """
-from flask import render_template, flash, redirect, url_for, Blueprint
+from flask import render_template, flash, redirect, url_for, Blueprint, Response
 from flask_login import login_user, logout_user, login_required, current_user
 
 from bluelog.models import Admin
@@ -17,7 +17,7 @@ auth_bp = Blueprint("auth", __name__)
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
-def login():
+def login() -> str | Response:
     if current_user.is_authenticated:
         return redirect(url_for("blog.index"))
 
@@ -39,7 +39,8 @@ def login():
 
 @auth_bp.route("/logout")
 @login_required
-def logout():
+def logout() -> Response:
     logout_user()
+
     flash("Logout success.", "info")
     return redirect_back()
