@@ -13,14 +13,22 @@ except ImportError:
 from flask import request, redirect, url_for, current_app
 
 
+def get_page():
+    return request.args.get("page", 1, type=int)
+
+
+def get_per_page():
+    return current_app.config["BLUELOG_POST_PER_PAGE"]
+
+
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
     test_url = urlparse(urljoin(request.host_url, target))
-    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
+    return test_url.scheme in ("http", "https") and ref_url.netloc == test_url.netloc
 
 
-def redirect_back(default='blog.index', **kwargs):
-    for target in request.args.get('next'), request.referrer:
+def redirect_back(default="blog.index", **kwargs):
+    for target in request.args.get("next"), request.referrer:
         if not target:
             continue
         if is_safe_url(target):
@@ -29,5 +37,8 @@ def redirect_back(default='blog.index', **kwargs):
 
 
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in current_app.config['BLUELOG_ALLOWED_IMAGE_EXTENSIONS']
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower()
+        in current_app.config["BLUELOG_ALLOWED_IMAGE_EXTENSIONS"]
+    )
